@@ -1,199 +1,84 @@
-# The RainNet2024 family of deep neural networks for precipitation nowcasting
+# RainNet India — experimental radar workflow
 
-This repository supports our paper submitted to [NHESS](https://www.natural-hazards-and-earth-system-sciences.net/):
+An India-oriented research extension of [RainNet2024](https://github.com/hydrogo/the-rainnet2024-family), with Indian city presets, radar-input checks, IST reports and a local rain-threshold alert.
 
-> Ayzel, G., and Heistermann, M. "Brief Communication: Training of AI-based nowcasting models for rainfall early warning should take into account user requirements."
+**Research prototype: no live India radar connection, India-trained weights or verified Indian forecast accuracy.** Changing coordinates does not adapt a weather model to a new climate. This project adds the engineering workflow for experiments with suitable Indian observations; scientific validation remains necessary.
 
-The RainNet2024 family's model configurations alongside the pre-trained weights are available at Zenodo:
+[Hindi usage guide](docs/HINDI_GUIDE.md) · [India data contract](docs/INDIA_DATA.md) · [Validation](docs/VALIDATION.md) · [Original README](UPSTREAM_README.md)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12547127.svg)](https://doi.org/10.5281/zenodo.12547127)
+## Capabilities
 
+- Offline synthetic demo for Mumbai, Delhi, Bengaluru, Chennai, Kolkata, Hyderabad and Pune. Clearly marked **SYNTHETIC DEMO / NOT AI**: persistence repeats the latest invented rain field.
+- RainNet2024 regression inference on four prepared radar grids, at 5-minute steps up to a 60-minute experimental rollout.
+- Checks for mm/h units, dimensions, timestamps, missing data, approximate 1 km spacing and location coverage. Invalid inputs stop the run.
+- IST JSON/HTML reports, gridded NumPy output and a **local console alert** at a user-selected rain-rate threshold.
+- Offline tests and a real-model smoke-test script using the original German sample.
 
-## TL;DR
+Phone push, WhatsApp/Telegram delivery, live IMD ingestion, raw radar calibration/gridding, automatic scheduling and fine-tuning are **not implemented**. No external messages are sent. The offline workflow needs no API key or cloud subscription.
 
-We have developed the new set of deep learning models for precipitation nowcasting which continue our work in the field started from the development of the [RainNet](https://github.com/hydrogo/rainnet) (hereafter RainNet2020; [paper](https://gmd.copernicus.org/articles/13/2631/2020/)).
+## Quick start
 
-The RainNet2024 family consists of two types of models:
-1. RainNet2024: a significant update of the RainNet2020 model, still providing predictions of rainfall intensities over the next 5 minutes (regression task).
-2. RaiNet2024-S: set of models, each of those predicts the probability of threshold exceedance over the particular threshold of hourly rainfall accumulation (segmentation task). The thresholds are 5, 10, 15, 20, 25, 30, and 40 mm. 
+Use Python 3.12. From this repository directory, Windows PowerShell:
 
-<img src="misc/the-rainnet2024-family.png" alt="RainNet2024 family models" width="100%"/>
-
-The source of model configurations -- the [segmentation-models](https://github.com/qubvel/segmentation_models) library developed by [Pavel Iakubovskii](https://github.com/qubvel).
-
-
-## RainNet2024
-
-While the predecessor model -- [RainNet2020](https://github.com/hydrogo/rainnet) -- follows the structure of a standard [U-net model](https://arxiv.org/abs/1505.04597) with some modifications regarding its depth and number of convolutional layers, RainNet2024 utilizes the EfficientNetB4 model as a decoder branch (backbone) for feature extraction. 
-
-Using the `segmentation_models` library, the RainNet2024 can be easily initialized as [Keras Model](https://keras.io/api/models/) instance in one line of code:
-
-```python
-import segmentation_models as sm
-
-rainnet2024 = sm.Unet(backbone_name="efficientnetb4",
-                      encoder_weights=None,
-                      classes=1,
-                      activation="linear",
-                      input_shape=(256, 256, 4))
-```
-The pretrained model from the respective [zenodo repository](https://doi.org/10.5281/zenodo.12547127) can be load as follows:
-
-```python
-from tensorflow.keras.models import load_model
-from efficientnet.tfkeras import EfficientNetB4
-import segmentation_models as sm
-
-model =  load_model(f"rainnet2024.keras", 
-                    custom_objects= {
-                    'jaccard_loss': sm.losses.JaccardLoss(),
-                    'iou_score': sm.metrics.IOUScore(),
-                    'bce_loss': sm.losses.BinaryCELoss()})
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install .
+.\.venv\Scripts\python.exe -m rainnet_india.cli demo --city mumbai
+Start-Process output/demo/report.html
 ```
 
+Linux/macOS:
 
-## RainNet2024-S
-
-While the RainNet2024 follows the standard approach for precipitation nowcasting, i.e., it predicts rainfall intensity in each grid cell for the next time step, the set of RainNet2024-**S** models predicts the probability of exceedance of the particular rainfall accumulation for the next hour. In our [paper submission](https://www.natural-hazards-and-earth-system-sciences.net/), we used seven different thresholds: 5, 10, 15, 20, 25, 30, and 40 mm. Thus, you can find the corresponding set of seven pre-trained models in the respective [zenodo repository](https://doi.org/10.5281/zenodo.12547127). Loading model is similar to the process described above for the RainNet2024 model. 
-
-
-```python
-import segmentation_models as sm
-
-rainnet2024 = sm.Unet(backbone_name="efficientnetb4",
-                      encoder_weights=None,
-                      classes=1,
-                      activation="sigmoid",
-                      input_shape=(256, 256, 4))
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install .
+.venv/bin/python -m rainnet_india.cli demo --city mumbai
 ```
 
+Open `output/demo/report.html`. This is an invented field at Mumbai coordinates, **not today's Mumbai weather**. City presets represent a city-center point, not every neighborhood.
 
-## Computation environment
+## Actual AI inference
 
-`rainnet2024_environment.yml` file provides [conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with all the necessary dependencies for working with the RainNet2024 family of models, as well as standard models from the [PySteps](https://github.com/pySTEPS/pysteps) library and radar data processing procedures.
+Install the model dependencies into the same environment and download the regression weights (~310 MB):
 
-
-## Data
-
-We use two sources of data to develop our training, validation, and testing datasets:
-1. [YW](https://opendata.dwd.de/climate_environment/CDC/help/landing_pages/doi_landingpage_RADKLIM_RW_V2017.002-en.html) radar composite developed by the German Weather Service (DWD). It is freely available, quality-controlled, and regularly updated dataset that provides weather radar data with a spatial coverage of 1110x900 km (Germany and some neighboring countries), spatial resolution of 1 km, and temporal resolution of 5 min since 2001. 
-2. [CatRaRE](https://www.dwd.de/EN/ourservices/catrare/catrare.html) (Catalogues of heavy precipitation events) dataset. Also freely available and regularly updated, CatRaRE provides an information about extreme precipitation events and their properties since 2001. The utilization of the CatRaRE dataset helps us to guide the training of the RainNet2024 family of models towards extreme and impact-relevant events.
-
-
-## Data preprocessing
-
-The CatRaRE dataset provides information about event properties such as time of start and end, spatial location. Using these properties, we use YW radar data to prepare data cubes for each described event that has a duration less than 6 hours (85% of the entire CatraRe dataset. 19613 events in total). 
-
-Each data cube has a spatial extent of 256x256 km, and temporal extent of event's duration (in 5 min time steps) +- 1 hour as a temporal buffer. We saved produced data cubes in `.npy` (numpy binary) format to ease their further use for training, validations, and testing procedures.
-
-|                  | Training  | Validation | Testing   |
-|------------------|-----------|------------|-----------|
-| Period           | 2001-2015 | 2016-2018  | 2019-2020 |
-| Number of events | 13400     | 4103       | 2110      |
-| Percentage       | 68        | 21         | 11        |
-
-We provide a data sample of a single event in `data` folder.
-
-
-## Training
-
-The main difference between the set of RainNet2024 models and RainNet2020 is in training procedure. While RainNet2020 was trained on a wider spatial domain (928x928 km) towards precipitation data of summer months from the period from 2006 to 2013, RaiNet2024 models utilize reduced spatial domain (256x256 km) with the focus on extreme events collected in the CatRaRE dataset. In this way, for the RainNet2024 family, we intentionally put the focus on dynamic events with high precipitation intensities -- ones that were problematic to nowcast for RainNet2020.
-
-For each period (train, validation, or test) and precipitation threshold (5, 10, 15, 20, 25, 30, 40 mm), we evaluated the corresponding CatRaRE events and created an index that collects the event's ID and the specific timestep of the data cube when the hourly rainfall is equal to or exceeds the threshold. For RainNet2024-S training and validation, we used only data relevant to the particular threshold exceedance while for threshold-agnostic RainNet2024, we used the full index as obtained from a threshold exceedance of 5 mm.
-
-We used the mean squared error (MSE) loss for RainNet2024, and the Jaccard loss (also referred as Intersection over Union, IoU) for the set of RainNet2024-S models. We also utilized [Adam](https://arxiv.org/abs/1412.6980) optimizer to perform weights optimization procedure. Training was set for 20 epochs with a simple learning rate reduction policy: if the validation loss did not decrease for two consecutive epochs, we reduced the learning rate by a factor of 0.1.
-
-The pseudo code for training a threshold-specific RainNet2024-S model is shown below:
-
-```python
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.utils import Sequence
-import segmentation_models as sm
-
-# loading respective index files, e.g., as following:
-# ["10001_12", "10001_13",...,"20518_35", "20518_36"]
-training_index = np.load("path/to/training/index")
-validation_index = np.load("path/to/validation/index")
-
-# create a Keras Sequence class for training 
-# and validation data delivery
-class DLSequence(Sequence):
-
-    # data IO and preprocessing is here
-    #...
-
-    return batch_x, batch_y 
-
-# set-up the respective sequences
-training_seq = DLSequence(...)
-validation_seq = DLSequence(...)
-
-# model initialization (see the respective 
-# section above for more details)
-model = sm.Unet(...)
-
-# compilation of model
-# provides ready-to-run instance
-# note: loss is "mse" for RainNet2024
-# and "jaccard" (sm.losses.JaccardLoss()) for RainNet2024-S
-model.compile(optimizer="Adam", loss=...)
-
-# setting-up Keras callbacks
-# 1. Reduction of learning rate while on plateau
-reduceLR = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', min_delta=0.0001, mode="min", patience=2, factor=0.1)
-
-# 2. Saving the best model regarding validation loss
-checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=..., save_weights_only=False, monitor='val_loss', mode='min', save_best_only=True)
-
-# Run training and validation
-model.fit(training_seq, validation_data=validation_seq,
-epochs=20, callbacks=[reduceLR, checkpoint])
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-model.txt
+.\.venv\Scripts\python.exe scripts/download_model.py
+.\.venv\Scripts\python.exe scripts/validate_upstream.py
 ```
 
+The downloader verifies the publisher checksum on [Zenodo](https://zenodo.org/records/12547127). Weights are not committed here. The loader accepts this specific regression artifact. TensorFlow runs on CPU with legacy Keras compatibility. On Linux/macOS substitute `.venv/bin/python`.
 
-## Evaluation
+`validate_upstream.py` uses **German** CatRaRE event 20815 and writes `output/upstream-validation/metrics.json`. The sample retains its original provenance; it has not been relabeled as Indian data.
 
-To evaluate model performance on the test period, we use two [community-approved metrics](https://cawcr.gov.au/projects/verification/):
+Local verification: 17 tests passed, actual pretrained inference completed on the German sample, and the prediction CLI completed on a synthetic Mumbai grid. See [the evidence and limits](docs/VALIDATION.md).
 
-1. Critical Success Index (CSI)
+For prepared Indian radar data, follow [INDIA_DATA.md](docs/INDIA_DATA.md):
 
-<img src="misc/CSI.png" alt="CSI results" width="50%"/>
-
-2. Fractions Skill Score (FSS)
-
-<img src="misc/FSS.png" alt="FSS results" width="100%"/>
-
-
-## Sample event
-
-Here we provide predictions of rainfall accumulation over the next hour calculated by different models for the exemplary event (CatRaRE ID: 20815; time step: 24).
-
-<img src="misc/20815_24.png" alt="Results for the sample event" width="100%"/>
-
-The YW data sample for the exemplary event (CatRaRE ID: 20815) is available in `data` folder.
-
-The code for model execution and figure plotting is available in `example_sample_event.ipynd` Jupyter Notebook.
-
-
-## Operational setting
-
-You can run the family of RainNet2024 models operationally. The respective code is provided in `example_operational.ipynb` Jupyter Notebook (the standard model from the PySteps library is also available).
-
-
-## Further notes
-
-### Choice of the loss function: jaccard vs. cross-entropy
-
-For training RainNet2024-S models, we used the Jaccard loss function. The underlying reason for that was a direct optimization towards CSI (Critical Success Index) -- the widely used community-approved metric for evaluation of precipitation nowcasts. However, as was pointed out by [Leinonen et al. (2022; Fig. 5)](https://journals.ametsoc.org/view/journals/aies/1/4/full-AIES-D-22-0043.1-f5.jpg), model which is trained using the CSI (==Jaccard) loss function does not provide calibrated probabilities. That means, that the output of RainNet2024-S models could not be considered as "probabilities" of threshold exceedance. Instead, (binary) cross-entropy loss can be effectively utilized to obtain calibrated probabilities.
-
-While using cross-entropy can be beneficial for particular user groups and decision-makers, the set of benchmark experiments showed the clear advantage of using the Jaccard loss for maximizing the CSI metric on test data.
-
-<img src="misc/jaccard_vs_bce.png" alt="RainNet2024-S family models trained with different loss functions" width="100%"/>
-
-
-## References
-
+```powershell
+.\.venv\Scripts\python.exe -m rainnet_india.cli predict --input india-data/mumbai.npz --city mumbai --steps 12 --threshold-mmh 1
 ```
-Leinonen, J., Hamann, U., & Germann, U. (2022). Seamless lightning nowcasting with recurrent-convolutional deep learning. Artificial Intelligence for the Earth Systems, 1(4), e220043.
+
+Add `--archive` for historical replay; outputs are visibly labeled. A fresh run requires the newest observation to be no more than 10 minutes old. `--output output/my-run` changes the destination.
+
+Thresholds are research settings, **not IMD warning classifications**. A crossing is neither an exact rain-start time nor a calibrated probability. Rain may already be occurring; the report includes the latest observed rate. No crossing is not an all-clear.
+
+## Data flow
+
+Authorized Indian radar/QPE → provider-specific calibration, QC and 1 km gridding → four timestamped arrays → input validation → Germany-trained RainNet2024 → city threshold check → local report/console alert.
+
+The original notebooks remain intact and use Germany's DWD feed. Do not reuse their DWD projection/downloader with Indian coordinates. Consult the [IMD API directory](https://mausam.imd.gov.in/responsive/apis.php), [radar data supply portal](https://radarapi.imd.gov.in/dsp/frontend/contact) and [xradar IMD reader](https://docs.openradarscience.org/projects/xradar/en/main/notebooks/IMD.html). Radar images and forecast bulletins are not calibrated rainfall tensors.
+
+## Tests
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
+
+CI runs lightweight tests/demo, not the model download. `requirements-model.txt` pins direct dependencies; `requirements-tested-windows-py312.txt` records the tested Windows environment. Do not use that Windows freeze unchanged on Linux.
+
+## Credit
+
+Based on Georgy Ayzel and Maik Heistermann's RainNet2024 work, upstream commit `43aa7c0144202c6e85706a07690d00619b222492`. Original MIT license, attribution, notebooks and sample provenance are retained. India workflow additions: Vivek Singh. Weights and datasets have their own source terms; code licensing does not override data access/redistribution rights. No IMD or original-author endorsement is implied.
+
+Use [official IMD forecasts and warnings](https://mausam.imd.gov.in/) for weather decisions. This is not an emergency warning service.

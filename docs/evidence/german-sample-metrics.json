@@ -1,0 +1,35 @@
+{
+  "dataset": "Upstream German CatRaRE event 20815; held-out event supplied by upstream",
+  "input_indices": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "truth_indices": [
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "forecast_shape": [
+    12,
+    256,
+    256
+  ],
+  "inference_seconds": 35.55,
+  "model_mae_mmh": 0.9311,
+  "persistence_mae_mmh": 0.9981,
+  "finite": true,
+  "minimum_mmh": 0.0,
+  "maximum_mmh": 82.5045,
+  "limitation": "Single German sample smoke test. Does not establish India skill or general superiority."
+}

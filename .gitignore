@@ -2,6 +2,13 @@
 ## model weights
 ## available at: "link to zenodo"
 models/*.keras
+models/*.part
+output/
+india-data/
+*.npz
+*.pem
+*.key
+*.token
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
