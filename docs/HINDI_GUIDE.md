@@ -4,7 +4,14 @@
 
 ## 1. बिना radar access के demo
 
-Python 3.12 install होना चाहिए। Repository download/clone करके उसका folder terminal में खोलें। Windows PowerShell:
+Python 3.12 install होना चाहिए। GitHub से ZIP download करके extract करें, या clone करें:
+
+```powershell
+git clone https://github.com/vivek99singh/rainnet-india.git
+cd rainnet-india
+```
+
+फिर उसी folder में Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv

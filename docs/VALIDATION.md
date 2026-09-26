@@ -12,10 +12,10 @@ Date: 26 September 2026. Platform: Windows x64, Python 3.12. Upstream base: `43a
 - Real RainNet2024 inference succeeded on German event 20815: input indices 20-23, observed comparison indices 24-35, output `(12,256,256)`. All predictions finite/nonnegative. Inference took 35.55 seconds on the local CPU (one run, not a benchmark).
 - Mean absolute rain-rate error on that single sample: RainNet **0.9311 mm/h**, persistence **0.9981 mm/h**. These are grid/time averages for one German event, not India accuracy or a general superiority claim.
 - The `predict` CLI also completed three AI forecast steps on the synthetic Mumbai grid and generated the labeled synthetic JSON/HTML/NumPy outputs and console alert. Synthetic inputs establish integration behavior, not forecast skill.
+- [GitHub Actions run 36259133932](https://github.com/vivek99singh/rainnet-india/actions/runs/36259133932) passed on Ubuntu/Python 3.12 for commit `dafd8f36e59fbe94289fe21f5c4dd5e6c36aed1c`: package installation, all 17 tests and the Mumbai offline demo. Completed 26 September 2026 at 17:28 UTC. Model inference is tested locally, not by this lightweight CI job.
 
 ## Pending
 
-- GitHub Actions: configured, no remote run verified.
 - Live Indian radar ingestion/calibration, Indian model training/evaluation and phone notifications: not performed.
 
 Software tests do not establish meteorological accuracy.

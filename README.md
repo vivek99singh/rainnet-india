@@ -18,7 +18,14 @@ Phone push, WhatsApp/Telegram delivery, live IMD ingestion, raw radar calibratio
 
 ## Quick start
 
-Use Python 3.12. From this repository directory, Windows PowerShell:
+Use Python 3.12. Download the repository ZIP, or clone it:
+
+```bash
+git clone https://github.com/vivek99singh/rainnet-india.git
+cd rainnet-india
+```
+
+From this repository directory, Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv
