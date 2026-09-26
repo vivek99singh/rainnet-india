@@ -23,7 +23,15 @@ def fetch(city, endpoint, key):
             data = json.load(response)
     except HTTPError as exc:
         # Never echo arbitrary provider error bodies, which may include request details.
-        raise ValueError(f"IndianAPI HTTP {exc.code}; check subscription/key, city and quota.") from None
+        if exc.code >= 500:
+            detail = "provider server error; no forecast received. Do not change or expose your key."
+        elif exc.code in (401, 403):
+            detail = "authentication/access rejected; check your active subscription and key."
+        elif exc.code == 429:
+            detail = "request limit reached; wait and check your plan quota."
+        else:
+            detail = "request rejected; check the city and endpoint parameters."
+        raise ValueError(f"IndianAPI HTTP {exc.code}; {detail}") from None
     except URLError:
         raise ValueError("Cannot reach IndianAPI; check network and TLS connection.") from None
     if not isinstance(data, dict) or "forecast" not in (data.get("weather", {}) if endpoint == "india" else data):

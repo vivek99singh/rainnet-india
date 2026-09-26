@@ -4,12 +4,12 @@ Date: 26 September 2026. Platform: Windows x64, Python 3.12. Upstream base: `43a
 
 ## Completed
 
-- Current offline suite: 26 tests passed on Windows/Python 3.12, including the original 17 radar tests, six weather tests and three IndianAPI request/security tests. Live IndianAPI authentication is not covered by mocks.
+- Current offline suite: 27 tests passed on Windows/Python 3.12, including the original 17 radar tests, six weather tests and four IndianAPI request/security tests. Live IndianAPI authentication is not covered by mocks.
 
 - Weather-view update: current Open-Meteo Mumbai request completed at 23:17 IST on 26 September 2026. API current-model timestamp 23:15 IST; 27.4°C, feels-like 31.9°C, 80% humidity and 9.3 km/h wind. The next three hourly probabilities were 21%, 26%, 29%. These are recorded fetch results, not enduring weather facts. Source JSON is local under `output/weather/` and is not committed.
 - Browser check: readable Mumbai HTML displayed current values and all eight hourly intervals, crossing midnight correctly. This is a weather-model forecast view, separate from RainNet inference.
 - Indian radar sample `IMD/JPR220822135253-IMD-B.nc` downloaded from open-radar-data (2,171,460 bytes). A historical sample download does not establish live Mumbai access or model skill.
-- IndianAPI optional request client prepared from the published contract. Authenticated live response remains pending an account API key. Tests use explicit mock responses and do not establish provider availability.
+- IndianAPI authenticated `/india/cities` returned HTTP 200 on 26 September 2026 at 18:32 UTC. Mumbai city, Colaba and Santacruz forecast requests returned HTTP 500 (`list index out of range`); global weather also returned HTTP 500. See [redacted evidence](evidence/indianapi-verification.json). The provider returned no usable Mumbai forecast in this check. Temporary plaintext key removed; no credential committed.
 
 - 17 offline unit/integration tests passed: units/grid spacing/orientation, missing data, timestamps, coverage, normalization/channel order, recursive feedback, model-output failures, IST/threshold reporting, archive labels, HTML escaping and CLI demo.
 - Mumbai synthetic demo generated JSON/HTML/NumPy output. Persistence baseline, explicitly NOT AI.

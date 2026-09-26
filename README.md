@@ -49,7 +49,7 @@ Open `output/weather/report.html`. Rerun the command for a fresh snapshot. Inter
 
 The page uses actual API output, but current conditions are weather-model estimates, not a local sensor measurement. It does not run RainNet. Rain chance and precipitation refer to the hour displayed on each card; the summary reports the highest individual hourly probability, not a combined three-hour probability. Missing data stays unknown; failed refreshes replace the previous report with an unavailable notice. See the [weather guide](docs/WEATHER.md).
 
-Optional [IndianAPI request client](docs/INDIANAPI.md): fetch India-specific daily forecasts or documented global hourly forecasts using your own API key. Authentication/live response is not verified yet, and this client is not wired into the dashboard.
+Optional [IndianAPI request client](docs/INDIANAPI.md): request India-specific daily forecasts or documented global hourly forecasts using your own API key. Authentication and the station list were verified; Mumbai forecast endpoints returned provider HTTP 500 on 26 September 2026. This client is not wired into the dashboard.
 
 For the offline research demo, run `python -m rainnet_india.cli demo --city mumbai` and open `output/demo/report.html`. That command generates an invented rain field and is **not today's Mumbai weather**.
 
@@ -67,7 +67,7 @@ The downloader verifies the publisher checksum on [Zenodo](https://zenodo.org/re
 
 `validate_upstream.py` uses **German** CatRaRE event 20815 and writes `output/upstream-validation/metrics.json`. The sample retains its original provenance; it has not been relabeled as Indian data.
 
-Local verification: 26 tests passed across radar, weather and the optional IndianAPI client. Actual pretrained inference completed on the German sample, and the prediction CLI completed on a synthetic Mumbai grid. See [the evidence and limits](docs/VALIDATION.md).
+Local verification: 27 tests passed across radar, weather and the optional IndianAPI client. Actual pretrained inference completed on the German sample, and the prediction CLI completed on a synthetic Mumbai grid. See [the evidence and limits](docs/VALIDATION.md).
 
 For prepared Indian radar data, follow [INDIA_DATA.md](docs/INDIA_DATA.md):
 

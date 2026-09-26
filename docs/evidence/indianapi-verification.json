@@ -1,0 +1,35 @@
+[
+  {
+    "url": "https://weather.indianapi.in/india/cities",
+    "status": 200,
+    "received_at": "2026-09-26T18:32:53.282769+00:00",
+    "station_matches": {
+      "43057": "Mumbai-colaba",
+      "43003": "Mumbai-santacruz"
+    }
+  },
+  {
+    "url": "https://weather.indianapi.in/india/weather?city=Mumbai",
+    "status": 500,
+    "received_at": "2026-09-26T18:32:57.332538+00:00",
+    "error": {
+      "detail": "list index out of range"
+    }
+  },
+  {
+    "url": "https://weather.indianapi.in/india/weather_by_id?city_id=43057",
+    "status": 500,
+    "received_at": "2026-09-26T18:33:39.652888+00:00",
+    "error": {
+      "detail": "list index out of range"
+    }
+  },
+  {
+    "url": "https://weather.indianapi.in/india/weather_by_id?city_id=43003",
+    "status": 500,
+    "received_at": "2026-09-26T18:33:41.624562+00:00",
+    "error": {
+      "detail": "list index out of range"
+    }
+  }
+]

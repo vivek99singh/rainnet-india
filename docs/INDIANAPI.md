@@ -28,4 +28,10 @@ For the documented hourly endpoint, add `--endpoint global` to the Python comman
 
 Output: `output/indianapi/response.json`. The fetch timestamp records when we received it; it is not a forecast issue time. Inspect returned city/station and forecast dates. Null rainfall means unavailable, not zero. Network failures do not silently switch to another provider.
 
-Integration status: request client prepared against the published contract; no authenticated live response has been verified yet. The readable `weather` dashboard currently uses Open-Meteo. IndianAPI JSON is not yet mapped into that screen; its daily and hourly responses have different semantics and require a verified response before that mapping.
+## Live verification: 26 September 2026, 18:32–18:34 UTC
+
+The free subscription was activated and an authenticated `/india/cities` request returned HTTP 200 with station IDs including Mumbai-Colaba `43057` and Mumbai-Santacruz `43003`. Authentication and station-list access work.
+
+Forecast retrieval failed: `/india/weather?city=Mumbai`, `/india/weather_by_id?city_id=43057` and `/india/weather_by_id?city_id=43003` all returned HTTP 500 with `{"detail":"list index out of range"}`. The documented `/global/weather` request also returned HTTP 500. This is the observed provider behavior at the test time, not a claim of permanent unavailability. No forecast was fabricated from these errors.
+
+The readable `weather` dashboard continues to use Open-Meteo. IndianAPI JSON is not mapped into that screen; first obtain a successful, fresh forecast response. Its daily and hourly responses have different semantics. The temporary local plaintext credential was removed, and no key was committed. [Non-secret verification evidence](evidence/indianapi-verification.json).

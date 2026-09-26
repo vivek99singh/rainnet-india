@@ -28,3 +28,10 @@ class IndianApiTests(unittest.TestCase):
                 fetch("Mumbai", "india", "test-placeholder")
         self.assertIn("401", str(caught.exception))
         self.assertNotIn("secret-echo", str(caught.exception))
+
+    def test_server_failure_is_not_reported_as_bad_credentials(self):
+        error = HTTPError("https://weather.indianapi.in", 500, "Internal Server Error", {}, io.BytesIO(b'private-detail'))
+        with patch("scripts.fetch_indianapi.urlopen", side_effect=error):
+            with self.assertRaisesRegex(ValueError, "provider server error") as caught:
+                fetch("Mumbai", "india", "test-placeholder")
+        self.assertNotIn("private-detail", str(caught.exception))
