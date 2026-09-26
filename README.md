@@ -1,13 +1,16 @@
-# RainNet India — experimental radar workflow
+# RainNet India — city weather and radar experiments
 
-An India-oriented research extension of [RainNet2024](https://github.com/hydrogo/the-rainnet2024-family), with Indian city presets, radar-input checks, IST reports and a local rain-threshold alert.
+Get a readable Indian city forecast with `weather`: temperature, feels-like temperature, upcoming hourly rain chances and a simple umbrella suggestion. This uses current [Open-Meteo](https://open-meteo.com/) weather-model output, not invented demo values.
 
-**Research prototype: no live India radar connection, India-trained weights or verified Indian forecast accuracy.** Changing coordinates does not adapt a weather model to a new climate. This project adds the engineering workflow for experiments with suitable Indian observations; scientific validation remains necessary.
+The separate radar research workflow extends [RainNet2024](https://github.com/hydrogo/the-rainnet2024-family), with Indian city presets, radar-input checks, IST reports and a local rain-threshold alert.
+
+**Radar research prototype: no live India radar connection, India-trained RainNet weights or verified Indian RainNet accuracy.** Changing coordinates does not adapt a weather model to a new climate. This project adds the engineering workflow for experiments with suitable Indian observations; scientific validation remains necessary.
 
 [Hindi usage guide](docs/HINDI_GUIDE.md) · [India data contract](docs/INDIA_DATA.md) · [Validation](docs/VALIDATION.md) · [Original README](UPSTREAM_README.md)
 
 ## Capabilities
 
+- Current city forecast dashboard, fetched on demand; hourly rain probability, precipitation, temperature, humidity and wind. A simple umbrella rule checks the next three hourly periods. It is not an AI inference or exact rain-start prediction.
 - Offline synthetic demo for Mumbai, Delhi, Bengaluru, Chennai, Kolkata, Hyderabad and Pune. Clearly marked **SYNTHETIC DEMO / NOT AI**: persistence repeats the latest invented rain field.
 - RainNet2024 regression inference on four prepared radar grids, at 5-minute steps up to a 60-minute experimental rollout.
 - Checks for mm/h units, dimensions, timestamps, missing data, approximate 1 km spacing and location coverage. Invalid inputs stop the run.
@@ -30,8 +33,8 @@ From this repository directory, Windows PowerShell:
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install .
-.\.venv\Scripts\python.exe -m rainnet_india.cli demo --city mumbai
-Start-Process output/demo/report.html
+.\.venv\Scripts\python.exe -m rainnet_india.cli weather --city mumbai
+Start-Process output/weather/report.html
 ```
 
 Linux/macOS:
@@ -39,10 +42,16 @@ Linux/macOS:
 ```bash
 python3.12 -m venv .venv
 .venv/bin/python -m pip install .
-.venv/bin/python -m rainnet_india.cli demo --city mumbai
+.venv/bin/python -m rainnet_india.cli weather --city mumbai
 ```
 
-Open `output/demo/report.html`. This is an invented field at Mumbai coordinates, **not today's Mumbai weather**. City presets represent a city-center point, not every neighborhood.
+Open `output/weather/report.html`. Rerun the command for a fresh snapshot. Internet is required; no API key or TensorFlow is needed for the free non-commercial endpoint. [Open-Meteo terms](https://open-meteo.com/en/terms) govern API use, including educational and commercial use; forecast attribution is included in the page. City presets represent a city-center point, not every neighborhood.
+
+The page uses actual API output, but current conditions are weather-model estimates, not a local sensor measurement. It does not run RainNet. Rain chance and precipitation refer to the hour displayed on each card; the summary reports the highest individual hourly probability, not a combined three-hour probability. Missing data stays unknown; failed refreshes replace the previous report with an unavailable notice. See the [weather guide](docs/WEATHER.md).
+
+Optional [IndianAPI request client](docs/INDIANAPI.md): fetch India-specific daily forecasts or documented global hourly forecasts using your own API key. Authentication/live response is not verified yet, and this client is not wired into the dashboard.
+
+For the offline research demo, run `python -m rainnet_india.cli demo --city mumbai` and open `output/demo/report.html`. That command generates an invented rain field and is **not today's Mumbai weather**.
 
 ## Actual AI inference
 
@@ -58,7 +67,7 @@ The downloader verifies the publisher checksum on [Zenodo](https://zenodo.org/re
 
 `validate_upstream.py` uses **German** CatRaRE event 20815 and writes `output/upstream-validation/metrics.json`. The sample retains its original provenance; it has not been relabeled as Indian data.
 
-Local verification: 17 tests passed, actual pretrained inference completed on the German sample, and the prediction CLI completed on a synthetic Mumbai grid. See [the evidence and limits](docs/VALIDATION.md).
+Local verification: 26 tests passed across radar, weather and the optional IndianAPI client. Actual pretrained inference completed on the German sample, and the prediction CLI completed on a synthetic Mumbai grid. See [the evidence and limits](docs/VALIDATION.md).
 
 For prepared Indian radar data, follow [INDIA_DATA.md](docs/INDIA_DATA.md):
 

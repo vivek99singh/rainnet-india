@@ -4,6 +4,36 @@ Accepts already calibrated/gridded QPE. Raw IMD polar radar volumes, images and 
 
 ## Data access and preparation
 
+### Verified Indian sources (26 September 2026)
+
+Indian radar data exists. Public samples, operational images and continuous numerical feeds have different access paths:
+
+| Source | Verified availability | Use in this project |
+|---|---|---|
+| [open-radar-data IMD samples](https://github.com/openradar/open-radar-data/tree/main/data/IMD) | Public historical NetCDF files. Downloaded `JPR220822135253-IMD-B.nc` successfully (2,171,460 bytes). | Reader/preprocessing experiments; not current Mumbai weather or a training time series. |
+| [xradar IMD reader](https://docs.openradarscience.org/projects/xradar/en/main/notebooks/IMD.html) | Documented `engine="imd"` reader; sample timestamp 22 August 2022. | Open-source parsing and volume assembly. The `.nc`, `.nc.1` through `.nc.9` files are elevation sweeps of one volume, not ten successive times. |
+| [IMD Radar Data Supply guide](https://radarapi.imd.gov.in/Received_data/dsp_userguide.pdf) | Official guide describes account creation and data requests. Direct retrieval hit a certificate-chain error here. | Check account access, station/date availability and applicable terms. An anonymous continuous Mumbai numerical feed has not been verified. |
+| [IMD Mumbai SWIRLS](https://nwp.imd.gov.in/swirls_mum.php) | Mumbai is listed in the [official nowcast menu](https://nwp.imd.gov.in/fdp_now/menu_1.php); opening the product redirected to login. | Potential existing nowcast source, subject to access; no current forecast retrieved from it. |
+| [IMD public weather/radar map](https://dss.imd.gov.in/dwr_img/GIS/currentwx/currentwx.html) | Public visualization entry point. | Link for viewers; do not treat rendered colors as calibrated numeric rainfall. |
+
+For a small reader experiment, the upstream example is:
+
+```python
+from open_radar_data import DATASETS
+import xarray as xr
+import xradar  # registers the IMD backend in versions with IMD support
+
+path = DATASETS.fetch("IMD/JPR220822135253-IMD-B.nc")
+sweep = xr.open_dataset(path, engine="imd")
+print(sweep)
+```
+
+These are optional radar-research dependencies, not dependencies of `weather`. The download above was verified locally; this reader example is from the xradar development documentation and was not executed here. Use a release/build that includes its IMD backend. Reflectivity in dBZ still needs appropriate processing before the mm/h contract below.
+
+An [IIT Bombay/IMD Mumbai preprint](https://arxiv.org/abs/2607.16080) describes training with Mumbai radar observations from May–August 2023. This supports the feasibility of India-trained nowcasting, but we have not obtained its training archive or model weights. It is not the model used by this repository.
+
+For an immediate, readable forecast, use `weather --city mumbai`: this fetches Open-Meteo weather-model output. It does not use these radar samples, and does not claim to be India-trained RainNet.
+
 Start with [IMD APIs](https://mausam.imd.gov.in/responsive/apis.php) and the [Radar Data Supply Portal](https://radarapi.imd.gov.in/dsp/frontend/contact). Check access/redistribution terms for the actual product. Keep credentials and acquired data out of Git.
 
 The [IMD API reference](https://api.imd.gov.in/public/api_reference.html) lists radar images; images cannot replace numeric rainfall tensors. The [xradar IMD NetCDF reader](https://docs.openradarscience.org/projects/xradar/en/main/notebooks/IMD.html) can help read authorized raw data, but does not itself establish rainfall calibration.

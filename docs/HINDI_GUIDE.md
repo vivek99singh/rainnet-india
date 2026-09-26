@@ -1,6 +1,17 @@
 # RainNet India कैसे चलाएँ
 
-यह experimental India workflow है। India में trained या verified weather service अभी नहीं है।
+ताज़ा city forecast देखने के लिए `weather` command इस्तेमाल करें। यह Open-Meteo से weather-model forecast लाती है। अलग `demo` और `predict` commands radar research के लिए हैं; India-trained RainNet अभी उपलब्ध नहीं है।
+
+## पहले साफ़ weather forecast देखें
+
+Repository और Python environment तैयार होने पर:
+
+```powershell
+.\.venv\Scripts\python.exe -m rainnet_india.cli weather --city mumbai
+Start-Process output/weather/report.html
+```
+
+इसमें तापमान, feels-like, humidity, हवा और अगले घंटों में बारिश की संभावना दिखती है। नया forecast लेने के लिए command दोबारा चलाएँ। Internet चाहिए, TensorFlow नहीं। [पूरी जानकारी](WEATHER.md) और [Indian radar sources](INDIA_DATA.md)।
 
 ## 1. बिना radar access के demo
 

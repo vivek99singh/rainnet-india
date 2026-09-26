@@ -32,8 +32,11 @@ table{{width:100%}} small{{color:#cbd5e1}}</style>
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="RainNet India experimental radar workflow; not an operational weather service.")
+    parser = argparse.ArgumentParser(description="Indian city weather forecasts and experimental RainNet radar research.")
     sub = parser.add_subparsers(dest="command", required=True)
+    weather = sub.add_parser("weather", help="Fetch current city forecast from Open-Meteo; no RainNet model needed")
+    weather.add_argument("--city", choices=CITIES, default="mumbai")
+    weather.add_argument("--output", type=Path, default=Path("output/weather"))
     demo = sub.add_parser("demo", help="Synthetic field + persistence baseline, no AI or network")
     demo.add_argument("--city", choices=CITIES, default="mumbai")
     demo.add_argument("--output", type=Path, default=Path("output/demo"))
@@ -47,6 +50,12 @@ def main(argv=None):
     run.add_argument("--output", type=Path, default=Path("output/prediction"))
     args = parser.parse_args(argv)
     try:
+        if args.command == "weather":
+            from .weather import run_weather
+            path = run_weather(args.city, args.output)
+            print(f"Open-Meteo forecast for {args.city}; hourly weather, not radar AI.")
+            print(f"Report: {path.resolve()}")
+            return 0
         if args.command == "demo":
             path = args.output / "synthetic_input.npz"
             synthetic_input(path, args.city)
